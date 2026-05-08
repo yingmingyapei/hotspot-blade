@@ -86,7 +86,7 @@
   <!-- Center: Main title -->
   <g transform="translate(400, 200)">
     <!-- Chinese title -->
-    <text x="0" y="0" font-family="'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="bold" fill="url(#textGradient)" filter="url(#glow)">热点刀锋</text>
+    <text x="0" y="0" font-family="'WenQuanYi Zen Hei', 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="bold" fill="url(#textGradient)" filter="url(#glow)">热点刀锋</text>
     
     <!-- English subtitle -->
     <text x="0" y="70" font-family="'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="300" fill="#8899bb" letter-spacing="4">HOTSPOT BLADE</text>
@@ -96,7 +96,7 @@
     <circle cx="320" cy="100" r="4" fill="#00d4ff" filter="url(#glow)"/>
     
     <!-- Tagline -->
-    <text x="0" y="140" font-family="'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif" font-size="16" fill="#667799">多平台热榜抓取 · 爆款微头条一键生成</text>
+    <text x="0" y="140" font-family="'WenQuanYi Zen Hei', 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif" font-size="16" fill="#667799">多平台热榜抓取 · 爆款微头条一键生成</text>
   </g>
   
   <!-- Right side: Platform icons circle -->
@@ -164,7 +164,7 @@
     <!-- Feature 1 -->
     <circle cx="40" cy="25" r="14" fill="#00d4ff" filter="url(#glow)"/>
     <text x="40" y="30" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0a1628">✓</text>
-    <text x="65" y="30" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" fill="#8899bb">数据源健康检查</text>
+    <text x="65" y="30" font-family="'WenQuanYi Zen Hei', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" fill="#8899bb">数据源健康检查</text>
     
     <!-- Divider -->
     <line x1="160" y1="15" x2="160" y2="35" stroke="#1a3a5c" stroke-width="1"/>
@@ -172,7 +172,7 @@
     <!-- Feature 2 -->
     <circle cx="220" cy="25" r="14" fill="#00d4ff" filter="url(#glow)"/>
     <text x="220" y="30" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0a1628">✓</text>
-    <text x="245" y="30" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" fill="#8899bb">故障自动切换</text>
+    <text x="245" y="30" font-family="'WenQuanYi Zen Hei', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" fill="#8899bb">故障自动切换</text>
     
     <!-- Divider -->
     <line x1="360" y1="15" x2="360" y2="35" stroke="#1a3a5c" stroke-width="1"/>
@@ -180,7 +180,7 @@
     <!-- Feature 3 -->
     <circle cx="420" cy="25" r="14" fill="#00d4ff" filter="url(#glow)"/>
     <text x="420" y="30" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0a1628">✓</text>
-    <text x="445" y="30" font-family="'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" fill="#8899bb">九边适配评分</text>
+    <text x="445" y="30" font-family="'WenQuanYi Zen Hei', 'Microsoft YaHei', 'PingFang SC', sans-serif" font-size="14" fill="#8899bb">九边适配评分</text>
   </g>
   
   <!-- Corner decorations -->
