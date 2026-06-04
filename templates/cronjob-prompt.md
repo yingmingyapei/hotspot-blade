@@ -46,6 +46,16 @@ hermes cronjob update <job-id> --deliver "local"
 
 ---
 
+## ⚠️ 铁律：必须使用 opencli 获取数据
+
+**所有数据采集必须通过 opencli 工具完成，禁止降级到 Python 直接调用 API。**
+
+- 如果 opencli 命令失败，重试3次
+- 如果3次都失败，报告该平台采集失败，跳过该平台
+- **绝不能用 `urllib`/`requests`/`curl` 直接调 API 作为替代方案**
+
+---
+
 ## 第一阶段：环境就绪检查
 
 **执行任何数据采集前，必须确认 opencli browser 环境就绪。**
