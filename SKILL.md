@@ -37,7 +37,7 @@ requires:
 
 ---
 
-## 一、激活条件
+## ⚠️ 铁律：必须使用 opencli 获取数据
 
 **所有数据采集必须通过 opencli 工具完成，禁止降级到 Python 直接调用 API（urllib/requests/curl）。**
 
@@ -49,16 +49,8 @@ requires:
 > **⚠️ 重要：** 此铁律必须同时写入 cron job 的 prompt（通过 `cronjob update`），不能只写在 SKILL.md 中。
 > 修改模板文件不会自动更新已存在的 cron job。详见 `references/cron-prompt-vs-template-pitfall-2026-06-04.md`。
 - 执行陷阱和经验教训见 `references/cron-execution-pitfalls-2026-06-04.md`
-
-> **⚠️ 铁律例外：备用数据源（2026-06-04 验证）**
-> 当 Chrome 未运行、opencli browser 不可用时，以下3个备用数据源**允许使用**，因为它们是直接访问目标平台的原始数据/官方API，不是通过百度搜索等中间算法加工的二手数据：
-> - 百度热搜（`top.baidu.com`）= 百度的原始热榜页面，不是百度搜索结果
-> - HN Firebase（`hacker-news.firebaseio.com`）= HN 官方 API
-> - Buzzing.cc = 直接访问目标网站
+> 🔴 **opencli 铁律执行失败案例**：详见 `references/cron-opencli-iron-rule-pitfalls-2026-06-04.md` — 四次 cron 执行记录、根因分析（弱模型忽略铁律+SKILL.md诱导）、解决方案（精简prompt+物理删除Python代码+禁止daemon命令）。
 - 执行陷阱和经验教训见 `references/cron-execution-pitfalls-2026-06-04.md`
-> 🔴 **opencli 铁律执行失败案例**：详见 `references/cron-opencli-iron-rule-pitfalls-2026-06-04.md` — 三次 cron 执行记录、根因分析（弱模型忽略铁律）、解决方案（精简 prompt + 直接执行）。
-> 🔧 **SKILL.md 降级代码清理模式**：详见 `references/skill-md-cleanup-pattern-2026-06-04.md` — 115 处 Python/urllib 代码如何诱导 Agent 违反铁律，以及彻底清理的步骤。
-> 🔍 **opencli 诊断与调试**：详见 `references/opencli-debugging-2026-06-04.md` — opencli 环境检查、Agent 常犯错误、cron 模式注意事项。
 
 ---
 
