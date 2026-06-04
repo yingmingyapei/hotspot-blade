@@ -383,7 +383,8 @@ requires:
 
 错误：Connection refused
 原因：Daemon 未运行
-解决：opencli daemon start
+解决：报告「Daemon 未运行，无法执行数据采集」，停止任务
+**注意：不要执行 opencli daemon start，daemon 通常已在运行中。如果 Connection refused，说明是网络问题，不是 daemon 问题。**
 
 错误：Command not found
 原因：opencli 未安装
