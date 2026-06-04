@@ -114,6 +114,23 @@ def main():
 
     print()
 
+    # 检查YouMind X爆款（需代理）
+    print('检查 YouMind X爆款...')
+    youmind_result = check_opencli_source(
+        'YouMind X爆款',
+        'python3 ~/.hermes/skills/productivity/hotspot-blade/scripts/youmind_viral_scraper.py --proxy http://127.0.0.1:1080 --limit 5 --format json',
+        timeout=45
+    )
+    results['YouMind X爆款'] = youmind_result
+    if youmind_result['status'] == 'ok':
+        print(f'✅ YouMind X爆款：{youmind_result["message"]}')
+    elif youmind_result['status'] == 'timeout':
+        print(f'⏰ YouMind X爆款：{youmind_result["message"]}（可能需要代理）')
+    else:
+        print(f'❌ YouMind X爆款：{youmind_result["message"]}')
+
+    print()
+
     # 检查Buzzing.cc
     print('检查 Buzzing.cc...')
     buzzing_result = check_buzzing_cc()
