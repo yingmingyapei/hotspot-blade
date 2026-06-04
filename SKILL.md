@@ -35,6 +35,17 @@ requires:
 
 ---
 
+## ⚠️ 铁律：必须使用 opencli 获取数据
+
+**所有数据采集必须通过 opencli 工具完成，禁止降级到 Python 直接调用 API（urllib/requests/curl）。**
+
+- 如果 opencli 命令失败，重试3次
+- 如果3次都失败，报告该平台采集失败，跳过该平台
+- **绝不能用 `urllib`/`requests`/`curl` 直接调 API 作为替代方案**
+- 本文件中所有 Python 直接调 API 的代码仅作为历史参考，**不得在执行中使用**
+
+---
+
 ## 一、激活条件
 
 以下任一情况触发本技能：
@@ -226,6 +237,7 @@ for name, cmd in sources:
 > 🔧 **scheduler.py cron_hint 修复**：详见 `references/scheduler-cron-hint-fix-2026-05-30.md` — `deliver: "local"` + `send_message` 推送方案已验证可用。
 > 🌐 **V2rayN 代理故障排查**：详见 `references/v2rayn-sniffing-tls-failure-2026-05-26.md` — YouMind 抓取失败时 TLS 握手中断的诊断与修复。
 > 🤖 **Cron模式执行指南**：详见 `references/cron-mode-execution-guide.md` — execute_code被阻断、pipe_to_interpreter被拦截、hermes send多消息推送、数据源可用性矩阵。
+> 🔧 **Cron执行错误恢复模式**：详见 `references/cron-execution-error-recovery-2026-06-04.md` — 4种典型错误（命令不存在/工具不可用/安全审批/API连接中断）的自动恢复策略和监控方法。
 
 > 📊 **opencli browser 热榜抓取实操指南**：详见 `references/opencli-browser-hotlist-guide.md` — 已验证的热榜URL、失效URL替代方案、JS渲染等待时间、各平台数据提取方法。
 
