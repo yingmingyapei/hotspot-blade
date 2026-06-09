@@ -129,24 +129,6 @@ def fetch_bilibili(cookies, limit=50):
         })
     return {"platform": "bilibili", "count": len(items), "items": items}
 
-def fetch_toutiao(cookies=None, limit=50):
-    """今日头条热榜（无需Cookie）"""
-    data = curl_get(
-        "https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc",
-        referer="https://www.toutiao.com"
-    )
-    if not data or "data" not in data:
-        return {"platform": "toutiao", "error": "请求失败", "items": []}
-    
-    items = []
-    for i, item in enumerate(data["data"][:limit]):
-        items.append({
-            "rank": i + 1,
-            "title": item.get("Title", ""),
-            "heat": item.get("HotValue", ""),
-            "url": item.get("Url", "")
-        })
-    return {"platform": "toutiao", "count": len(items), "items": items}
 
 def fetch_36kr(cookies, limit=50):
     """36氪热榜"""
@@ -227,7 +209,6 @@ PLATFORMS = {
     "weibo": {"name": "微博热搜", "fetch": "weibo", "needs_cookie": True},
     "bilibili": {"name": "B站热门", "fetch": "bilibili", "needs_cookie": True},
     "36kr": {"name": "36氪热榜", "fetch": "36kr", "needs_cookie": False},
-    "toutiao": {"name": "头条热榜", "fetch": "toutiao", "needs_cookie": False},
     "baidu": {"name": "百度热搜", "fetch": "baidu", "needs_cookie": False},
 }
 
@@ -236,13 +217,12 @@ FETCH_MAP = {
     "weibo": fetch_weibo,
     "bilibili": fetch_bilibili,
     "36kr": fetch_36kr,
-    "toutiao": fetch_toutiao,
     "baidu": fetch_baidu,
 }
 
 def main():
     parser = argparse.ArgumentParser(description="热点刀锋热榜抓取")
-    parser.add_argument("--platform", "-p", help="指定平台 (zhihu/weibo/bilibili/36kr/toutiao/baidu)")
+    parser.add_argument("--platform", "-p", help="指定平台 (zhihu/weibo/bilibili/36kr/baidu)")
     parser.add_argument("--limit", "-l", type=int, default=50, help="每平台最多条数")
     parser.add_argument("--json", action="store_true", help="输出JSON格式")
     parser.add_argument("--all", action="store_true", help="抓取所有平台")
@@ -259,7 +239,7 @@ def main():
     if args.platform:
         platforms_to_fetch = [args.platform]
     else:
-        platforms_to_fetch = ["zhihu", "weibo", "bilibili", "36kr", "toutiao", "baidu"]
+        platforms_to_fetch = ["zhihu", "weibo", "bilibili", "36kr", "baidu"]
     
     results = {}
     for platform in platforms_to_fetch:
