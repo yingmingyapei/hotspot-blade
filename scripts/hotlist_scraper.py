@@ -148,6 +148,45 @@ def fetch_toutiao(cookies=None, limit=50):
         })
     return {"platform": "toutiao", "count": len(items), "items": items}
 
+def fetch_36kr(cookies, limit=50):
+    """36氪热榜"""
+    cookie = cookies.get("36kr", "")
+    # 36氪热榜用 POST 请求
+    cmd = [
+        "curl", "-s", "--max-time", "15",
+        "-X", "POST",
+        "-H", f"User-Agent: {USER_AGENT}",
+        "-H", f"Cookie: {cookie}",
+        "-H", "Referer: https://36kr.com/",
+        "-H", "Content-Type: application/json",
+        "-d", json.dumps({"partner_id": "wap", "param": {"siteId": 1, "platformId": 2}}),
+        "https://gateway.36kr.com/api/mis/nav/home/nav/rank/hot"
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    try:
+        data = json.loads(result.stdout)
+    except (json.JSONDecodeError, ValueError):
+        return {"platform": "36kr", "error": "请求失败", "items": []}
+
+    if data.get("code") != 0:
+        return {"platform": "36kr", "error": f"API错误: {data.get('code')}", "items": []}
+
+    hot_list = data.get("data", {}).get("hotRankList", [])
+    items = []
+    for i, item in enumerate(hot_list[:limit]):
+        mat = item.get("templateMaterial", {})
+        items.append({
+            "rank": i + 1,
+            "title": mat.get("widgetTitle", ""),
+            "author": mat.get("authorName", ""),
+            "read": mat.get("statRead", 0),
+            "like": mat.get("statPraise", 0),
+            "collect": mat.get("statCollect", 0),
+            "comment": mat.get("statComment", 0),
+            "url": f"https://36kr.com/p/{mat.get('itemId', '')}"
+        })
+    return {"platform": "36kr", "count": len(items), "items": items}
+
 def fetch_baidu(cookies=None, limit=50):
     """百度热搜（无需Cookie）"""
     data = curl_get(
@@ -187,6 +226,7 @@ PLATFORMS = {
     "zhihu": {"name": "知乎热榜", "fetch": "zhihu", "needs_cookie": True},
     "weibo": {"name": "微博热搜", "fetch": "weibo", "needs_cookie": True},
     "bilibili": {"name": "B站热门", "fetch": "bilibili", "needs_cookie": True},
+    "36kr": {"name": "36氪热榜", "fetch": "36kr", "needs_cookie": False},
     "toutiao": {"name": "头条热榜", "fetch": "toutiao", "needs_cookie": False},
     "baidu": {"name": "百度热搜", "fetch": "baidu", "needs_cookie": False},
 }
@@ -195,13 +235,14 @@ FETCH_MAP = {
     "zhihu": fetch_zhihu,
     "weibo": fetch_weibo,
     "bilibili": fetch_bilibili,
+    "36kr": fetch_36kr,
     "toutiao": fetch_toutiao,
     "baidu": fetch_baidu,
 }
 
 def main():
     parser = argparse.ArgumentParser(description="热点刀锋热榜抓取")
-    parser.add_argument("--platform", "-p", help="指定平台 (zhihu/weibo/bilibili/toutiao/baidu)")
+    parser.add_argument("--platform", "-p", help="指定平台 (zhihu/weibo/bilibili/36kr/toutiao/baidu)")
     parser.add_argument("--limit", "-l", type=int, default=50, help="每平台最多条数")
     parser.add_argument("--json", action="store_true", help="输出JSON格式")
     parser.add_argument("--all", action="store_true", help="抓取所有平台")
@@ -218,7 +259,7 @@ def main():
     if args.platform:
         platforms_to_fetch = [args.platform]
     else:
-        platforms_to_fetch = ["zhihu", "weibo", "bilibili", "toutiao", "baidu"]
+        platforms_to_fetch = ["zhihu", "weibo", "bilibili", "36kr", "toutiao", "baidu"]
     
     results = {}
     for platform in platforms_to_fetch:
@@ -271,6 +312,12 @@ def main():
                     label = item.get("label", "")
                     label_str = f"[{label}]" if label else ""
                     print(f"  {rank:2d}. {label_str} {title} ({item.get('heat', '')})")
+                elif platform == "36kr":
+                    read = item.get("read", 0)
+                    read_str = f"{read/10000:.1f}万" if read >= 10000 else str(read)
+                    author = item.get("author", "")
+                    print(f"  {rank:2d}. {title}")
+                    print(f"      作者:{author} | 阅读:{read_str} | 点赞:{item.get('like', 0)}")
                 else:
                     print(f"  {rank:2d}. {title}")
                 print()
