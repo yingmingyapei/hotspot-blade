@@ -31,6 +31,7 @@ requires:
 > **参考文件**：
 > - `references/opencli-cron-error-patterns.md` — opencli 定时任务错误模式与修复
 > - `references/data-collection-pitfalls-2026-06-04.md` — 数据采集实战经验
+> - `references/jiubian-data-driven-analysis-2026-06-08.md` — **🔥 九边Pro爆款数据分析**（223条实测：主题分布、TOP20内容、高评论物件锚点、六大爆款规律）
 
 > **多平台热榜抓取 + 爆款微头条一键生成**
 >
@@ -42,17 +43,20 @@ requires:
 
 ---
 
-## ⚠️ 铁律：必须使用 opencli 获取数据
+## 数据采集方式：curl + Cookie + Python（v3.5 更新）
 
-**所有数据采集必须通过 opencli 工具完成，禁止降级到 Python 直接调用 API（urllib/requests/curl）。**
+**所有数据采集通过热榜抓取脚本完成：**
 
-- 如果 opencli 命令失败，重试3次
-- 如果3次都失败，报告该平台采集失败，跳过该平台
-- **绝不能用 `urllib`/`requests`/`curl` 直接调 API 作为替代方案**
-- 本文件中所有 Python 直接调 API 的代码仅作为历史参考，**不得在执行中使用**
+```bash
+python3 ~/.hermes/scripts/hotlist_scraper.py --json --limit 50
+```
 
-> **⚠️ 重要：** 此铁律必须同时写入 cron job 的 prompt（通过 `cronjob update`），不能只写在 SKILL.md 中。
-> 修改模板文件不会自动更新已存在的 cron job。详见 `references/cron-prompt-vs-template-pitfall-2026-06-04.md`。
+- 脚本使用 curl + Cookie 直接调用各平台 API
+- Cookie 文件：`~/.hermes/cookies/hotlist-cookies.json`（需定期更新）
+- 支持平台：知乎热榜、微博热搜、B站热门、头条热榜、百度热搜
+- **如脚本报错，检查 Cookie 是否过期**
+
+> **⚠️ 重要：** 修改脚本或 Cookie 后，需通过 `cronjob update` 同步更新定时任务。
 - 执行陷阱和经验教训见 `references/cron-execution-pitfalls-2026-06-04.md`
 > 🔴 **opencli 铁律执行失败案例**：详见 `references/cron-opencli-iron-rule-pitfalls-2026-06-04.md` — 四次 cron 执行记录、根因分析（弱模型忽略铁律+SKILL.md诱导）、解决方案（精简prompt+物理删除Python代码+禁止daemon命令）。
 - 执行陷阱和经验教训见 `references/cron-execution-pitfalls-2026-06-04.md`
@@ -104,6 +108,20 @@ requires:
 
 九边验证：优速通3篇(2038+882+801)、蒙古国3篇(651+621+448)、某贝餐饮3篇(1658+1137+802)。
 
+**⚠️ 一题三篇数据弹药隔离规则（2026-06-08 新增）**
+
+> 教训来源：MCP降级数据源产出的6篇文章中，同一数据点（三星+SK占KOSPI 30%、甲骨文裁3万人、每天850人被裁）在3篇文章中反复出现，读者感受"换标题但内容差不多"。
+
+```
+□ 同一数据点（具体数字、公司名、事件细节）最多出现在1篇中
+□ 第1篇（引爆）：宏观数据 + 大数字冲击（"一天蒸发1万亿美元""裁员38242人"）
+□ 第2篇（反驳）：具体案例 + 个人故事（"我三年前做翻译的朋友""Midjourney让设计师失业"）
+□ 第3篇（升华）：类比 + 历史对比 + 哲学视角（"20年前说学会电脑不愁工作"）
+□ 写完后逐篇扫描，发现数据点重复出现在2篇以上 → 必须替换为新数据
+```
+
+**根因分析**：一题三篇对数据弹药库的要求远高于5篇5话题。5篇5话题天然数据不重复（不同话题=不同数据），但一题三篇用同一事件写3篇，如果数据源贫乏（如只有110条快讯），Agent 会用同一组事实反复包装。解决办法：数据源必须丰富（5个平台热榜 > 100条），且强制隔离。
+
 #### 升级4：自曝式开场强制规则
 
 ```
@@ -149,12 +167,14 @@ TOP 10中8条以"我"开头。读者第一反应不是"这人要教育我"，而
 
 | 数据源 | 主要命令 | 备用方案1 | 备用方案2 | 备用方案3 | 故障处理 |
 |--------|----------|-----------|-----------|-----------|----------|
-| 知乎热榜 | **`opencli zhihu hot -f json`** | 微博热搜替代 | — | — | ✅ 已验证（2026-06-05），直接API，无需Chrome |
-| 微博热搜 | `opencli weibo hot` | m.weibo.cn ❌ 跳转访客系统 | **百度热搜替代** | — | 记录故障，继续执行 |
+| 知乎热榜 | **`opencli zhihu hot -f json`** | `opencli zhihu search "热榜" -f json`（搜索替代） | 微博热搜替代 | — | ✅ 已验证（2026-06-05），直接API，无需Chrome |
+| 微博热搜 | `opencli weibo hot` | `opencli weibo search "热搜" -f json`（搜索替代） | 百度热搜替代 | — | 记录故障，继续执行 |
 | **YouMind X爆款** | **`python3 scripts/youmind_viral_scraper.py`** | **opencli** | **HN Firebase 替代** | — | 记录故障，继续执行 |
 <!-- [已清理] 原内容涉及 Python 直接调 API -->
 | 36氪热榜 | `opencli 36kr hot` | 直接curl 36kr API ⚠️ 旧数据 | **Hacker News替代** | — | 记录故障，继续执行 |
 | v2ex热榜 | `opencli v2ex hot` | 无备用 | Baidu热搜替代 | — | 记录故障，继续执行 |
+
+> 📋 **微博 & 知乎 Cookie+curl API 数据采集**：详见 `references/zhihu-weibo-api-data-sources.md` — 当 opencli 不可用时，可直接用 Cookie + curl 调用微博热搜 API (`/ajax/side/hotSearch`) 和知乎热榜 API (`/api/v3/feed/topstory/hot-lists/total`)，含必要 Cookie 列表、请求头配置、返回数据结构。
 | **Baidu热搜** | **opencli** | **—** | **—** | **—** | **新增主力国内源** |
 | **HN Firebase** | **opencli** | **—** | **—** | **—** | **新增主力海外源** |
 
@@ -189,16 +209,29 @@ TOP 10中8条以"我"开头。读者第一反应不是"这人要教育我"，而
 - Baidu热搜提供国内社会/国际/消费类话题，Buzzing.cc提供海外信息差（28个媒体子站）
 - 两个数据源互补性已足够支撑每日选题，YouMind/HN Firebase为可选增量源
 
-**场景5：opencli全部失败（Daemon未运行/Extension未连接）**
-- **首先尝试**：`opencli daemon restart`，等待15秒
-- **如果daemon restart也超时**：切换到MCP cn-finance降级模式
-- **第一步**：`finance_cls(limit=30)` 获取财联社实时快讯（提供当天实时锚点）
-- **第二步**：`finance_news(query="热点 社会 民生 YYYY年M月", limit=15)` + `finance_news(query="国际政治 外交 军事 YYYY年M月", limit=15)` 按领域搜索（搜索词必须含年月，否则返回过期数据）
-- **第三步**：`delegate_task(tasks=[...])` 3个子代理并行深度搜索（每个子代理搜索不同话题方向，toolsets=["search","web"]）
-- **MCP工具不违反铁律**（不是urllib/requests/curl直接调API）
-- 详见 `references/mcp-fallback-pattern-2026-06-04.md` 和 `references/mcp-fallback-verified-2026-06-06.md`
+**场景5：opencli任何异常 → 立即停止（2026-06-08 铁律更新）**
 
-**场景6：所有数据源都失败（含MCP）**
+**⚠️ 不重试、不降级、不找替代方案。opencli 出错 = 整个任务停止。**
+
+停止条件（任一触发即停）：
+- `opencli doctor` 不是全部 OK
+- 任何一条抓取命令失败（超时/报错/返回空）
+- HTTPS_PROXY 环境变量冲突导致 undici 解析失败
+
+停止后输出故障报告，不继续执行任何步骤。
+
+**禁止作为热点刀锋数据源的工具**：
+- ❌ 财联社 `finance_cls`
+- ❌ 问财 `finance_news`
+- ❌ 任何 MCP cn-finance 工具
+- 原因：这些数据源产出的文章数据弹药重复率高，读者感受"换标题但内容差不多"
+
+**HTTPS_PROXY 冲突修复**（2026-06-08 已修复）：
+- 根因：`~/.hermes/.env` 中 `HTTPS_PROXY=socks5://127.0.0.1:10808`，undici 只认 `http://`/`https://`
+- 修复：改为 `HTTPS_PROXY=http://127.0.0.1:10808`（端口同时支持 HTTP 和 SOCKS5）
+- 详见 `references/mcp-fallback-proxy-env-conflict-2026-06-08.md`
+
+**场景6：所有平台都失败**
 - 立即停止执行，发送故障报告
 - 不使用过期数据凑合
 - 等待数据源恢复后重新执行
@@ -362,7 +395,7 @@ TOP 10中8条以"我"开头。读者第一反应不是"这人要教育我"，而
 | 数据源 | 权重 | 定位 | 优先级 | 采集方式 |
 |--------|------|------|--------|---------|
 | **知乎热榜** | **25%** | 深度社会议题，九边风格最佳素材 | P0 | `opencli zhihu hot -f json` ✅ |
-| **微博热搜** | **25%** | 舆情风向标，热点首发地 | P0 | `opencli weibo hot -f json` ✅ |
+| **微博热搜** | **25%** | 舆情风向标，热点首发地 | P0 | `opencli weibo hot -f json` ✅ / `curl` AJAX API ✅（交互模式可用，见 `references/weibo-hot-search-api.md`） |
 | **B站热榜** | **20%** | 年轻人视角，代际冲突源 | P0 | `opencli bilibili hot -f json` |
 | **雪球热帖** | **15%** | 金融垂直，看多vs看空天然对撞 | P0 | `opencli xueqiu hot -f json` |
 | **头条热榜** | **15%** | 直接命中头条用户兴趣 | P0 | `opencli toutiao hot -f json` |
@@ -490,6 +523,27 @@ TOP 10中8条以"我"开头。读者第一反应不是"这人要教育我"，而
 ### 筛选标准
 
 从抓取结果中筛选候选话题，按以下维度评分：
+
+### 🎯 钱包距离过滤器（2026-06-08 实战验证，优先级最高）
+
+> **核心发现**：当多个话题评分接近时，选离读者钱包最近的那个。
+> 实战案例：7个候选话题中，"高层住宅是不是垃圾资产"（直接关乎房产=家庭70%资产）胜出，
+> 而热度更高的"Apple Intelligence缺席"（中国用户根本用不到）、"医生互评"（跟普通人无关）被淘汰。
+
+**钱包距离评估表：**
+
+| 距离 | 话题特征 | 头条用户反应 | 示例 |
+|------|---------|-------------|------|
+| **零距离** | 直接关乎读者手里的钱/资产/房子 | "这篇文章在说我" | 房价、工资、物价、黄金 |
+| **近距离** | 日常消费/生活中天天接触 | "我也遇到过" | 外卖杀熟、手机定价、教育费用 |
+| **中距离** | 间接影响收入/支出 | "跟我有点关系" | 汇率、关税、行业裁员 |
+| **远距离** | 只有特定群体才在乎 | "跟我有什么关系？" | AI替代程序员、特定行业内部规则 |
+| **零距离以下** | 中国用户根本不适用 | "什么玩意？" | Apple Intelligence、海外专属功能 |
+
+**使用规则：**
+- 多个话题评分接近（差距<5分）时，钱包距离近的优先
+- 远距离话题需要大量"降维"改造才能破圈，成本高、效果差
+- 零距离以下的话题直接排除，不管热度多高
 
 | 维度 | 说明 | 权重 |
 |------|------|------|
@@ -1330,6 +1384,7 @@ Step 3 草稿写作 + 快速预览检查
 - 海外信息差类 → 早高峰（与海外时差同步）
 
 第七步：文学润色大师终稿润色（必做，不可跳过）
+  → ⚠️ **2026-06-08 实测教训**：此步在cron执行中经常被跳过。必须在输出前强制检查是否已执行。
   → 加载 `article-polish-master` 技能，按其5步法对每篇微头条做终稿润色
   → 润色重点：
     □ 清除AI味：删"值得注意的是""不难发现""综上所述""基于以上分析"等AI习语
@@ -1383,7 +1438,7 @@ Step 3 草稿写作 + 快速预览检查
 
 > 📋 **字数不足根因与展开技巧**：详见 `references/word-count-enforcement-lesson.md` — 初稿低于400字的最常见原因是中段"展开论证"写得太薄，附四种展开技巧和预判公式。
 
-#### 九边句式七条清单（仅供参考，多数已退役）
+#### 九边句式七条清单（仅供参考，多数已退役 — ⛔ 见上方"禁用句式清单"）
 ```
 □ 开场：数字 + 具体反差事实（退役："你以为X？说真的Y"）
 □ 打脸：直接用数据/事实定性，不用"说白了"前缀（退役："说白了，X不是在干Y"）
@@ -1393,6 +1448,8 @@ Step 3 草稿写作 + 快速预览检查
 □ 追问：用具体场景代替泛问（退役："你猜X？Y？还是Z？"）
 □ 数字幽默：数字排比，不用加形容词。（保留）
 ```
+
+**⚠️ 重要提示**：上述标注"退役"的句式已被列入"禁用句式清单"，在新创作中禁止使用。此清单仅作为历史参考，帮助识别旧文风。
 
 #### 郭德纲句式七条清单（新增）
 ```
@@ -1987,11 +2044,15 @@ hermes cronjob create \
 - `references/real-tension-topics.md` — **🔥 真实议题库**（16个中国社会天然存在的立场分裂议题，每个议题包含：两派群体定义、数据弹药、可嫁接的热点类型、嫁接示例。配合v3.1真实议题嫁接方法论使用）
 - `references/viral-article-marketing-analysis-framework.md` — **爆款微头条营销学分析框架**（STP分析、消费者心理学五层触发、社交货币、爆款公式提炼）
 - `scripts/group_tags_matcher.py` — **人群标签自动匹配器**（GROUP_TAGS字典+match_groups函数，热榜话题自动打人群标签）
+- `scripts/retired-phrase-scanner.py` — **退役句式扫描器**（自动检测输出中的退役句式，用法：`echo "文章" | python3 scripts/retired-phrase-scanner.py`）
 - `guodegang-perspective/references/research/郭德纲写作风格手册.md` — **郭德纲写作风格手册**
 - `references/platform-login-and-access-2026-06-02.md` — **🔥 平台登录态与热榜抓取实测**（6个平台测试结果、opencli browser复用Chrome登录态、Chrome开机自启动配置、各平台抓取命令、故障降级策略）
 - `references/data-driven-optimization-methodology.md` — **🔥 数据驱动优化方法论**（选题权重配置、头条适配性评分、标题公式白名单、科技降维检查、结尾追问模板、自优化规则）
 - `references/mcp-fallback-pattern-2026-06-04.md` — **🔧 MCP cn-finance降级模式**（当opencli Daemon未运行时，使用MCP金融工具替代数据采集的完整流程）
 - `references/mcp-fallback-verified-2026-06-06.md` — **🔧 MCP降级模式实测验证**（2026-06-06实测：CLS+问财新闻+delegate_task三源组合，95条数据，5篇产出。含具体工具调用、数据量对比、关键经验）
+> - `references/opencli-platform-availability-matrix.md` — **📋 opencli平台可用性矩阵**（哪些命令是public直接可用、哪些需要cookie、搜索替代策略）
+> - `references/mcp-fallback-proxy-env-conflict-2026-06-08.md` — **🔧 HTTPS_PROXY环境变量冲突导致opencli失败**
+- `references/v34-execution-pitfalls-2026-06-08.md` — **🔥 v3.4执行陷阱实测记录**（跳过第七步润色、使用退役句式、风格融合不足、撕裂力度不够的根因分析和修复方案，含快速预输出检查清单）（新故障模式：daemon存活但命令超时/URL协议错误，MCP直调方案，含诊断步骤和Python调用模式）
 - 执行陷阱和经验教训见 `references/cron-execution-pitfalls-2026-06-04.md`
 > 🔴 **opencli 铁律执行失败案例**：详见 `references/cron-opencli-iron-rule-pitfalls-2026-06-04.md` — 三次 cron 执行记录、根因分析（弱模型忽略铁律）、解决方案（精简 prompt + 直接执行）。
 > 🔧 **SKILL.md 降级代码清理模式**：详见 `references/skill-md-cleanup-pattern-2026-06-04.md` — 115 处 Python/urllib 代码如何诱导 Agent 违反铁律，以及彻底清理的步骤。
