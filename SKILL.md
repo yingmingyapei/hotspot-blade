@@ -11,6 +11,7 @@ requires:
     - topic-scorer
     - toutiao-viral-writing
     - article-polish-master
+    - russell-flip-arsenal
   bins:
     - python3
     - python3.10
@@ -64,10 +65,11 @@ python3 ~/.hermes/scripts/hotlist_scraper.py --json --limit 50
 - 检查历史去重（7天）
 - 输出选题确认给用户
 
-**步骤3：写作（加载 toutiao-viral-writing）**
+**步骤3：写作（加载 toutiao-viral-writing + russell-flip-arsenal）**
 - 每个话题调用 toutiao-viral-writing 的七步流程
 - 每篇600字左右，纯文本输出
-- 可选项：加载 russell-flip-arsenal 添加翻转角度
+- **必做**：加载 russell-flip-arsenal，对每个话题应用至少1个翻转引擎找角度
+- **铁律**：翻转观点已内化为己用，文中决口不提"某某说过""某学者认为"——思想是作者的
 
 **步骤4：润色（加载 article-polish-master）**
 - AI味检测、句式变阵、情感注入
