@@ -56,7 +56,7 @@ diff ~/.hermes/cron/output/<job_id>/<date>_09-48-40.md \
 # 如果 diff 仅时间戳差异，说明两次执行结果相同，是同一个故障
 
 # 5. 今日 Wiki 文件大小检查（判断「只有分析无正文」故障）
-SIZE=$(wc -c < /mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/$(date +%Y-%m-%d)-热点刀锋微头条-5篇.md 2>/dev/null || echo "0")
+SIZE=$(wc -c < /mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/$(date +%Y-%m-%d)-热点刀锋微头条-5篇.md 2>/dev/null || echo "0")  # 对外路径：C:\Users\yingm\wiki\sources\market-intelligence\daily\YYYY-MM-DD-热点刀锋微头条-5篇.md
 if [ "$SIZE" -gt 0 ] && [ "$SIZE" -lt 10000 ]; then
     echo "⚠️ 今日执行仅 ${SIZE} 字节（正文需≥10KB），属「只有分析无正文」故障"
 fi

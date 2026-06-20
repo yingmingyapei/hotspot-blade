@@ -136,9 +136,42 @@ ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
 ## 提交历史
 
 ```
+04a59e9 feat: 同步最新技能文件和定时任务配置
 de155c4 fix: regenerate cover image with Chinese font support
 64f58a4 feat: add GitHub repository cover image
 6a58f54 feat: 热点刀锋技能初始版本
+```
+
+---
+
+## 2026-06-04 定时任务配置同步
+
+同步最新技能文件和定时任务配置到 GitHub。
+
+**更新内容：**
+- SKILL.md 858行 → 3410行（完整六阶段流程）
+- 新增 cronjob-config.md（定时任务配置文档）
+- 更新 scripts/（5个脚本：data_source_health_check, group_tags_matcher, hotspot-blade-push, save_zhihu_hot, youmind_viral_scraper）
+- 更新 templates/（cronjob-prompt.md 六阶段架构）
+- 新增 47 个 references 文档
+
+**定时任务配置：**
+- Job ID: `0d5874d5e1fd`
+- 调度: 每天 08:00 (`0 8 * * *`)
+- 交付: `local`（Agent 自动推送 via `hermes send`）
+- 模型: `mimo-v2.5-pro` (xiaomi)
+
+**同步工作流：**
+```bash
+# 源: ~/.hermes/skills/productivity/hotspot-blade/
+# 目标: ~/hotspot-blade/ (git@github.com:yingmingyapei/hotspot-blade.git)
+
+cp ~/.hermes/skills/productivity/hotspot-blade/SKILL.md ~/hotspot-blade/
+cp -r ~/.hermes/skills/productivity/hotspot-blade/scripts/* ~/hotspot-blade/scripts/
+cp -r ~/.hermes/skills/productivity/hotspot-blade/references/* ~/hotspot-blade/references/
+cp -r ~/.hermes/skills/productivity/hotspot-blade/templates/* ~/hotspot-blade/templates/
+# 创建 cronjob-config.md 记录定时任务配置
+cd ~/hotspot-blade && git add -A && git commit -m "..." && git push
 ```
 
 ---

@@ -62,7 +62,7 @@
 ## 去重检查（必须在选题前执行）
 
 ```bash
-cat /mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/hotspot-blade-history.json
+cat /mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/hotspot-blade-history.json  # 对外路径：C:\Users\yingm\wiki\sources\market-intelligence\daily\hotspot-blade-history.json
 ```
 
 逐条比对候选话题 vs 历史7天已写话题：

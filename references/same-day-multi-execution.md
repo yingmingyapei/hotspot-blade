@@ -15,7 +15,7 @@
 import json
 from pathlib import Path
 
-history_file = Path("/mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/hotspot-blade-history.json")
+history_file = Path("/mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/hotspot-blade-history.json")  # 对外路径：C:\Users\yingm\wiki\sources\market-intelligence\daily\hotspot-blade-history.json
 with open(history_file) as f:
     hist = json.load(f)
 

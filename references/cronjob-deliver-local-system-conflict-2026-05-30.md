@@ -57,7 +57,7 @@ SILENT: If there is genuinely nothing new to report, respond with exactly "[SILE
 **Agent 实际产出（正常）**：
 - 输出文件：`~/.hermes/cron/output/0d5874d5e1fd/2026-05-30_07-23-27.md`（100KB）
 - 📌 标记数量：10个（5篇正文 + 格式说明中的示例）
-- Wiki 存档：`/mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/2026-05-30-热点刀锋微头条-5篇.md`（6.5KB）
+- Wiki 存档：`C:\Users\yingm\wiki\sources\market-intelligence\daily\2026-05-30-热点刀锋微头条-5篇.md`（6.5KB）（WSL中访问：`/mnt/c/Users/yingm/wiki/sources/market-intelligence/daily/2026-05-30-热点刀锋微头条-5篇.md`）
 - 正文完整度：5篇均 ≥300 中文字符 ✅
 
 **Telegram 收到**：无（deliver="local" + 系统阻止 send_message）

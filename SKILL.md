@@ -49,7 +49,7 @@ hotlist-scraper → topic-scorer → PPT报告 → 推送Telegram
 ## 模式B：完整写作
 
 ```flow
-hotlist-scraper → topic-scorer → 选Top 5 → toutiao-viral-writing → article-polish-master → 推送
+hotlist-scraper → topic-scorer → 选Top 5 → 认知落差引擎 → toutiao-viral-writing → article-polish-master + retired-phrase-scanner（并行） → 推送
 ```
 
 **执行步骤：**
@@ -65,17 +65,22 @@ python3 ~/.hermes/scripts/hotlist_scraper.py --json --limit 50
 - 检查历史去重（7天）
 - 输出选题确认给用户
 
+**步骤2.5：认知落差检测（新增 v4.2）**
+- 加载 `references/cognitive-gap-engine-2026-06-20.md`
+- 对每个入选话题执行：找读者默认共识 → 生成颠覆前提的假设
+- 如果话题存在可翻的前提，将假设注入后续写作；如果无，跳过
+- 输出：每个话题的默认共识 + 颠覆假设（<200 token/话题）
+
 **步骤3：写作（加载 toutiao-viral-writing + russell-flip-arsenal）**
 - 每个话题调用 toutiao-viral-writing 的七步流程
-- 每篇600字左右，纯文本输出
-- **必做**：加载 russell-flip-arsenal，对每个话题应用至少1个翻转引擎找角度
+- 每篇**500字**左右（v4.2从600下调），纯文本输出
+- 结构：反常识判断→拆解（现象嵌入其中，不独立成段）→冷幽默收束
+- **必做**：加载 russell-flip-arsenal，慎用"战争即无聊"引擎（翻得太刻意）。优先用"占有vs创造"
 - **铁律**：翻转观点已内化为己用，文中决口不提"某某说过""某学者认为"——思想是作者的
 
-**步骤4：润色（加载 article-polish-master）**
-- AI味检测、句式变阵、情感注入
-- 三宗罪自检
-
-**步骤4.5：质量验证（脚本化）**
+**步骤4：润色 + 质量验证（可并行 v4.2，实测省16.7%）**
+- 润色：加载 article-polish-master，AI味检测、句式变阵、情感注入
+- 质量验证（与润色并行）：运行 retired-phrase-scanner.py 扫描禁用语
 ```bash
 python3 ~/.hermes/skills/productivity/hotspot-blade/scripts/retired-phrase-scanner.py --strict /tmp/article_N.txt
 ```
@@ -116,6 +121,14 @@ python3 ~/.hermes/skills/productivity/hotspot-blade/scripts/retired-phrase-scann
 ## v4.1 升级计划
 
 详见 `references/v41-optimization-plan-2026-06-17.md`。
+
+## v4.2 方向：反馈闭环（IA讨论）
+
+详见 `references/ia-feedback-loop-discussion-2026-06-20.md`。核心诊断：topic-scorer评分有效性从未验证。方案优先级：权重规则表 > Telegram bot标签 > 统计回归。
+
+## v4.2 认知落差引擎（新增写作技术）
+
+详见 `references/cognitive-gap-engine-2026-06-20.md`。17轮辩论中IA提出的最大发现——在评分和写作之间插入"颠覆默认前提"步骤。翻立场不如翻前提。命中率预估提升 10-30% → 40-60%。
 
 | 优先级 | 任务 | 状态 |
 |--------|------|------|
@@ -209,11 +222,96 @@ python3 ~/.hermes/skills/productivity/hotspot-blade/scripts/retired-phrase-scann
 **问题**：头条/微博/知乎等平台不定期升级反爬虫机制，curl+Cookie 方案突然失效。
 **防御**：监控 hotlist-scraper 输出条数，连续 0 条 → 触发告警。curl_cffi 是中期替代方案，极端情况用 browser_navigate 兜底。
 
-### 14. 图片提示词必须先加载技能（反模式#3，已犯8次）
+### 14. 图片提示词必须先加载技能（反模式#3，已犯11次）
+
 **问题**：用户说"生成图片提示词"时，直接写英文prompt跳过了 `article-to-image-prompt` 技能加载。
-**防御**：任何模式（B/C）的输出步骤前，检查用户是否要求"生成图片提示词/配图/封面"。如果匹配 → **立即停止当前输出**，先 `skill_view('article-to-image-prompt')` 加载技能。**铁律**：即使"能写好prompt"也必须走技能流程。
+
+**2026-06-20复发记录**：同一会话连续3次违规——用户先后提交3篇文章要求"生成图片提示词"（外卖补贴大战、AI比人便宜、日本签证费涨5倍），每次都直接输出英文prompt，未加载技能。复发模式：写稿惯性太强，写完文章→自然过渡到"顺便生成图"→跳过技能。
+
+**防御**：**写完文章的最后一段之前，先扫描用户原始请求中是否包含"生成图片/配图/prompt/提示词/封面"。如果命中，在输出文章正文最后一句时立即刹车——不输出图片提示词。先 `skill_view('article-to-image-prompt')`。铁律：即使"能写好prompt"也必须走技能流程。这不是能力问题，是流程纪律问题。
+
+### 15. 脚本文件不能混入markdown文档（2026-06-20 IA反馈）
+**问题**：`data_source_health_check.py` 前20行是markdown文档（标题、用法、代码块标记），导致IA语法检查失败。
+**防御**：`.py` 文件只包含纯Python代码。使用说明、故障表格等放在 `references/` 下的 `.md` 文件中。同步前先验证：`python3 -c "import ast; ast.parse(open('file.py').read())"`。
 
 ---
+
+### 15. 脚本文件混入markdown文档（2026-06-20，IA反馈）
+
+**问题**：`data_source_health_check.py` 前 20 行是 markdown 文档（`> 用于热点刀锋...`），不是 Python 代码，导致 IA 端 Python 语法检查失败。
+
+**防御**：
+- 脚本文件（`.py`）必须是纯 Python 代码，第一行 `#!/usr/bin/env python3`
+- 使用说明、故障策略等文档放在 `references/` 目录下的 `.md` 文件中
+- 脚本的 docstring（`"""..."""`）是合法的 Python 注释，可以保留
+- 每次 scp 后验证：`python3 -c "import ast; ast.parse(open('script.py').read())"`
+
+---
+
+## v4.2 优化方向（2026-06-20 WSL+IA联合辩论结论）
+
+> 详见 `references/ia-debate-v42-full-2026-06-20.md`。11轮结构化辩论产出5个维度的诊断和方案。
+
+| # | 诊断 | 结论 | 优先级 |
+|---|------|------|--------|
+| 1 | 反馈闭环断裂 | 选题评分从未验证。建权重规则表 | P0 |
+| 2 | 思想密度不足 | article-polish-master 灌水感。降字数 600→500 + 现象嵌入拆解结构 | P0 |
+| 3 | "战争即无聊"引擎翻得太硬 | 砍掉或慎用。保留"占有vs创造"。不翻比硬翻好 | P1 |
+| 4 | 管路速度瓶颈 | 润色+禁用语扫描并行化，实测省 16.7%（非 30%） | P1 |
+| 5 | MiMo 评分漏好题 | 三层评分：规则粗筛→MiMo 打分→DeepSeek 终审 | P2 |
+
+**字数策略修正**：
+- 模式B写作从 600 字降至 **500 字**
+- 结构从"现象→反常识判断→层层拆解→冷幽默收束"压缩为"反常识判断(30字)→拆解含现象(350字)→冷幽默收束(120字)"
+- 砍掉独立开头段，将现象作为拆解的血肉嵌入
+- 已验证：IA 被逼用"日本签证费涨5倍"写 400 字范例，结构可行但偏紧；500 字给拆解环节更多呼吸空间
+
+**翻转引擎裁决**：
+| 引擎 | 判决 |
+|------|------|
+| 占有 vs 创造 | ✅ 保留 |
+| 冲动驱动论 | — |
+| 教育即偏见 | — |
+| 战争即无聊 | ❌ 砍掉/慎用 |
+
+---
+
+### 17. 反馈闭环断裂（2026-06-20 IA诊断）
+
+**问题**：topic-scorer 用 MiMo 评分选热点，但评分有效性从未被验证。P0-P3 所有优化都是"写前优化"，数据从不回流到评分系统。花钱让 DeepSeek 出稿，却不知道哪些选题是雷、哪些是金。
+
+**防御**：
+1. 建权重修正规则表——某类选题连续 3 次反馈"爆"，手动上调权重
+2. Telegram bot 推标签（爆/平/冷）建立最小反馈锚点
+3. 长期用统计回归剥离选题质量变量
+
+### 18. 润色环节缺少思想密度检测（2026-06-20 IA诊断）
+
+**问题**：toutiao-viral-writing 初稿出现"一个观点扩成五段"的灌水时，article-polish-master 只会让文字更顺滑，把灌水感包装得更好看。缺一个"思想密度检测"介入点。
+
+**防御**：
+1. **源头解决**：降字数 600→500，从 prompt 约束倒逼模型压缩信息
+2. **结构压缩**：将"现象"嵌入"拆解"中作为例证，不独立成段
+3. 可选方案（暂不实施）：LLM 做段落级因果递进检测或 Python 规则扫描每段新增信息量
+
+### 19. 认知落差引擎缺少事实侧数据则退化为模型猜测（2026-06-20 32轮辩论结论）
+
+**问题**：认知落差引擎（Gap-Hunter）需要两类输入——情绪侧（热搜标题+评论）和事实侧（统计数据+权威来源）。现有hotlist-scraper只覆盖情绪侧50%输入。没有事实侧，引擎无法做"热搜观点 vs 事实数据"的对比——只能让DeepSeek猜哪里可能有落差，产出的认知落差不可信。
+
+**实锤**：第18轮IA用引擎跑3个话题产出了高质量假设，但第29轮承认"不接入外部数据，本质是模型自己在猜"。Round 25-27单prompt实验同时验证：事实核查+语气校准+认知深度三件事无法在一个线性prompt中兼顾。
+
+**防御**：
+- 短期：认知落差引擎只用于"明显存在反常识话题"的场景，不硬翻
+- 中期：接入事实侧数据源——NewsAPI（英文）、GDELT（全球）、mx-search（中文财经）
+- 运行时检测：Gap-Hunter产出后检查是否引用了具体数据——无引用的落差标注为"推测性落差"，降低权重
+- 别假装有数据——宁可跳过认知落差步骤，也不输出没有事实支撑的"假反转"
+
+### 20. 讨论节奏：不要主动暂停（2026-06-20 用户明确指令）
+
+**问题**：WSL在跨轮次讨论中频繁停下来做总结、询问方向。用户明确说"不要停，我没说停就不要停""你怎么一轮一轮的，要讨论到底"。
+
+**防御**：跨轮次讨论中，除非用户说"停"或"换话题"，否则持续推下一轮。不要在中间插入"要不要继续？"这类询问。总结和方向确认只在用户主动要求时做。
+
 
 ## P3分析结论：Scrapling不需要
 
@@ -230,6 +328,20 @@ python3 ~/.hermes/skills/productivity/hotspot-blade/scripts/retired-phrase-scann
 **何时需要Scrapling**：某平台关闭JSON API、改用HTML渲染时。已创建 `scripts/hotlist_html_fallback.py` 作为HTML降级方案。
 
 **升级路径**：`curl_cffi JSON → HTML Fallback → Scrapling → browser_navigate`
+
+---
+
+### 15. 子技能更新后必须验证整条链路（2026-06-20）
+**问题**：改了hotlist_scraper.py后，没有检查hotspot-blade的cron prompt是否引用了新脚本路径。子技能更新可能打破父技能的流程。
+**防御**：子技能更新后，检查所有父技能的引用是否仍然有效。建立依赖关系表，变更时逐条验证。
+
+### 16. 多技能生态升级先扫描再动手（2026-06-20）
+**问题**：8+个技能组成的生态，禁用语清单在5处维护版本各不同，v4.1方案重复3遍，Pitfalls有重复。
+**防御**：升级前完整扫描所有子技能+脚本+参考文档，列出不一致清单。单一信源原则：同一份数据只在一处维护，其他地方引用。
+
+### 15. 脚本文件不能混入markdown文档（2026-06-20 IA反馈）
+**问题**：`data_source_health_check.py` 前20行是markdown文档（"> 用于热点刀锋..."），导致Python语法检查失败。
+**防御**：脚本文件只放纯Python代码。文档/说明/使用方法放在 `references/` 下的独立.md文件中。创建脚本时检查：第一个非空行必须是 `#!/usr/bin/env python3` 或 `# -*-` 或 `import`。
 
 ---
 
