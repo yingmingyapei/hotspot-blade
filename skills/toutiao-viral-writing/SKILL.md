@@ -9,7 +9,7 @@ requires:
     - "toutiao-sentence-patterns"
     - "toutiao-topic-engine"
     - "article-polish-master"
-version: 2.0.0
+version: 5.0.0
 created: 2026-05-01
 updated: 2026-06-26
 ---
