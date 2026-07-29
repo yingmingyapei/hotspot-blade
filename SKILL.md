@@ -1,8 +1,8 @@
 ---
 name: hotspot-blade
-version: 5.0.0
+version: 6.1.0
 title: 热点刀锋
-description: 热榜采集→选题评分→爆款写作→推送的完整工作流编排器。不重复数据采集和写作逻辑。触发词：「写热点」「抓热榜写微头条」「热点刀锋」
+description: 热榜采集→选题评分→爆款写作→发布侧优化→推送的完整工作流编排器。覆盖封面/标题/时间/评论运营。触发词：「写热点」「抓热榜写微头条」「热点刀锋」
 author: Hermes
 keywords: [热榜, 热点, 微头条, 爆款, 编排]
 requires:
@@ -18,7 +18,7 @@ requires:
     - curl
 ---
 
-# 热点刀锋（v5.0.0）
+# 热点刀锋（v6.1.0）
 
 > 职责：编排。加载子技能做具体事，不重复内容。
 > 写作技能v2.0.0：三级选题池 + 人设差异化 + 互动全链路 + 算法适配 + 五维复盘 + 产能复用 + 价值纵深
@@ -114,6 +114,32 @@ python3 ~/.hermes/skills/productivity/hotspot-blade/scripts/retired-phrase-scann
 | `/mnt/c/Users/yingm/OneDrive/Desktop/选题报告_日期.pptx` | PPT报告 |
 | `references/banned-phrases-unified.md` | 禁用语统一清单（27词+6句式） |
 | `references/banned-phrases-data.json` | 禁用语机器可读数据 |
+
+## 配套工具（v6.1 新增）
+
+以下工具位于 `scripts/` 和 `references/`，按使用场景排序：
+
+### 发布前必用
+
+| 工具 | 用途 | 用法 |
+|------|------|------|
+| `scripts/score-headlines.py` | 3个备选标题心理模型评分，选最高分发 | `python3 score-headlines.py "标题1" "标题2" "标题3"` |
+| `scripts/validate-persona.py` | 人设校验（数字密度/算账视角/情绪过滤/禁用词） | `python3 validate-persona.py < article.txt` |
+| `references/title-template-library.md` | 爆款标题模板库，按选题级别分类（4级×10+模板） | 每次写标题前先查 |
+
+### 选题阶段
+
+| 工具 | 用途 | 用法 |
+|------|------|------|
+| `scripts/auto-score.py` | 选题自动预评分，NLP关键词匹配5维度 | `python3 auto-score.py "话题1" "话题2"` |
+| `references/topic-scorer-psychology-bridge.md` | 选题评分×心理模型桥接表 | 评分时调用 marketing-psychology 25 模型判定 |
+
+### 运营阶段
+
+| 工具 | 用途 | 用法 |
+|------|------|------|
+| `scripts/feedback-tracker.py` | 互动数据追踪+偏差分析，校准评分模型 | `python3 feedback-tracker.py add` / `analyze` |
+| `scripts/health-check.py` | 数据源健康检查+自动降级，建议每天跑 | `python3 health-check.py` / `--cron` |
 
 ## Cron Job ID
 

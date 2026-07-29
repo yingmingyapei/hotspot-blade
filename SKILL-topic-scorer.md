@@ -100,6 +100,15 @@ python3.10 ~/.hermes/scripts/generate_topic_report_pptx.py \
 □ 交叉验证：多个平台同时出现？
 ```
 
+心理模型校验（桥接表追加）：
+```
+□ 该选题至少触发 2 个 P0 级心理模型？
+□ 标题应用了对应级别的心理模型（锚定/损失厌恶/模仿性欲望至少其一）？
+□ 结尾留了认知钩子（峰终定律或知识诅咒反向）？
+```
+
+桥接表详见：`references/topic-scorer-psychology-bridge.md`
+
 ## Pitfalls
 
 ### 1. 去重 false-positive
