@@ -199,6 +199,28 @@ author: Hermes
 3. 此防御覆盖 pitfall#43（微头条字数目标 500 字左右），两者叠加：目标是 500 字左右 + 字数红线不可为数据妥协。
 4. 模型切换时应重新验证字数行为——不同模型对同一红线的执行力度不同。
 
+### 46. 新 provider 连通性须先验证再报告——避免"配了又删"浪费来回（2026-08-05 巡检传播）
+
+**问题**：2026-08-05 连续两次（bynara/agnes-2.0-flash、tokenrouter/kimi-k3-free）出现"配完 → 用户说删 → 删掉"。根因是新 provider 配完后未先做连通测试就宣告完成。
+**防御**：agent 模式 cron 配置新 provider 时，配完后先执行一次连通验证（curl 健康端点 / 模型试调），连通失败直接向用户提示不可用，不走"先配再删"路径。free 版 router 优先假设不稳定。
+
+### 45. 技能更新后必须同步到独立仓库（`~/.hermes/skills/` → `~/hotspot-blade/`）（2026-08-05 实操）
+
+**问题**：hotspot-blade 存在两个独立副本——(A) Hermes 安装路径 `~/.hermes/skills/hotspot-blade/`（通过 skill_manage/patch 更新）和 (B) 独立 GitHub 仓库 `~/hotspot-blade/`（手动 git push）。通过 Hermes 工具更新 (A) 后，(B) 不会自动同步，导致 GitHub 仓库版本落后于实际使用的技能。v6.3.0 更新后若不同步，GitHub 上仍是旧版 v6.1.0。
+
+**防御**：
+1. 任何对 hotspot-blade SKILL.md 的修改完成后，**立即执行以下同步步骤**：
+   ```bash
+   cp ~/.hermes/skills/hotspot-blade/SKILL.md ~/hotspot-blade/SKILL.md
+   # 检查 installed skill 有多少 references/scripts
+   find ~/.hermes/skills/hotspot-blade/ -type f
+   # 对比 repo 缺少哪些 reference/script，逐一 cp 过去
+   ```
+2. 同步后检查 `git status`，确保所有新 reference/script 都被 tracked
+3. commit message 格式：`vX.Y.Z: <一句话变更摘要> + <文件清单>`
+4. `git push origin main` —— 仓库地址 `github.com/yingmingyapei/hotspot-blade`
+5. 已存在 `references/github-sync-and-cron-update-guide.md` 作为详细参考
+
 ### 44. cron 产出未写入 memory_store 的事实写入停滞（2026-07-27 深度进化巡检新发现）
 **问题**：`memory_store.db` 最新一条 fact 创建于 2026-07-10，距离今日已 17 天。这意味 7/10 至 7/27 期间的所有 cron 任务（每日自我审视、深度进化、海外信息差、全网热榜）虽然正常产出，但**没有任何新事实被写入 memory_store**——系统学习断档。
 **防御**：每个 cron 任务结尾应主动将一条"本次运行概要"写入 memory_store（用 memory 工具），保证教训持续累积，而不是只在 lessons/SKILL.md 里堆积无结构化索引的文本。
