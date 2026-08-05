@@ -204,22 +204,17 @@ author: Hermes
 **问题**：2026-08-05 连续两次（bynara/agnes-2.0-flash、tokenrouter/kimi-k3-free）出现"配完 → 用户说删 → 删掉"。根因是新 provider 配完后未先做连通测试就宣告完成。
 **防御**：agent 模式 cron 配置新 provider 时，配完后先执行一次连通验证（curl 健康端点 / 模型试调），连通失败直接向用户提示不可用，不走"先配再删"路径。free 版 router 优先假设不稳定。
 
-### 45. 技能更新后必须同步到独立仓库（`~/.hermes/skills/` → `~/hotspot-blade/`）（2026-08-05 实操）
+### 45. ~~技能更新后必须同步到独立仓库~~ → 已 symlink 化，两个路径同一文件（2026-08-06 关闭 D-03）
 
-**问题**：hotspot-blade 存在两个独立副本——(A) Hermes 安装路径 `~/.hermes/skills/hotspot-blade/`（通过 skill_manage/patch 更新）和 (B) 独立 GitHub 仓库 `~/hotspot-blade/`（手动 git push）。通过 Hermes 工具更新 (A) 后，(B) 不会自动同步，导致 GitHub 仓库版本落后于实际使用的技能。v6.3.0 更新后若不同步，GitHub 上仍是旧版 v6.1.0。
+**问题（历史）**：hotspot-blade 曾存在两个独立副本——(A) Hermes 安装路径 `~/.hermes/skills/hotspot-blade/` 和 (B) GitHub 仓库 `~/hotspot-blade/`。skill_manage patch 只改 (A)，GitHub 端永远落后。
 
-**防御**：
-1. 任何对 hotspot-blade SKILL.md 的修改完成后，**立即执行以下同步步骤**：
-   ```bash
-   cp ~/.hermes/skills/hotspot-blade/SKILL.md ~/hotspot-blade/SKILL.md
-   # 检查 installed skill 有多少 references/scripts
-   find ~/.hermes/skills/hotspot-blade/ -type f
-   # 对比 repo 缺少哪些 reference/script，逐一 cp 过去
-   ```
-2. 同步后检查 `git status`，确保所有新 reference/script 都被 tracked
-3. commit message 格式：`vX.Y.Z: <一句话变更摘要> + <文件清单>`
-4. `git push origin main` —— 仓库地址 `github.com/yingmingyapei/hotspot-blade`
-5. 已存在 `references/github-sync-and-cron-update-guide.md` 作为详细参考
+**修复（2026-08-06）**：已经把 `~/.hermes/skills/hotspot-blade/` 改为 symlink → `~/hotspot-blade/`。**两个路径现在指向同一份文件，无同步问题。**
+
+**新规则**：
+1. 任何 skill_manage/patch 直接改 repo 内文件，**改完只需 commit + push**，不再需要 cp
+2. push 是仓库正确性兜底，不 push 不会丢失功能，只是 GitHub 端不可见
+3. 不得删除/重建 `~/.hermes/skills/hotspot-blade/` symlink（重建会恢复双副本状态）
+4. 历史备份在 `~/.hermes/backups/hotspot-blade.bak-20260806`（保留 30 天后可删）
 
 ### 44. cron 产出未写入 memory_store 的事实写入停滞（2026-07-27 深度进化巡检新发现）
 **问题**：`memory_store.db` 最新一条 fact 创建于 2026-07-10，距离今日已 17 天。这意味 7/10 至 7/27 期间的所有 cron 任务（每日自我审视、深度进化、海外信息差、全网热榜）虽然正常产出，但**没有任何新事实被写入 memory_store**——系统学习断档。
