@@ -1,0 +1,90 @@
+{
+  "ai_bubble": {
+    "keywords": ["AI", "大模型", "GPT", "OpenAI", "DeepSeek", "Token", "算力", "GPU", "英伟达", "人工智能", "Anthropic", "Claude", "大模型降价", "模型训练", "AI泡沫"],
+    "zhihu_topics": ["人工智能", "AI", "大模型", "深度学习", "计算机视觉"],
+    "weibo_super_topics": ["AI", "人工智能", "大模型", "科技"],
+    "36kr_columns": ["智能涌现", "AI 前线", "大模型日报"],
+    "bilibili_categories": ["科技", "野生技术协会"],
+    "peer_boost": {"wallet": 1.5, "refute": 1.0}
+  },
+  "real_estate": {
+    "keywords": ["房价", "房贷", "公积金", "楼市", "房地产", "买房", "租房", "首付", "LPR", "降息", "限购", "契税", "房产税", "学区房"],
+    "zhihu_topics": ["房地产", "买房", "房产", "房价", "楼市"],
+    "weibo_super_topics": ["房产", "买房", "房价"],
+    "36kr_columns": ["地产", "房产"],
+    "bilibili_categories": ["生活", "家居"],
+    "peer_boost": {"wallet": 2.0, "refute": 1.0, "object": 1.0}
+  },
+  "job_market": {
+    "keywords": ["裁员", "降薪", "涨薪", "工资", "收入", "失业", "就业", "招聘", "求职", "灵活就业", "毕业", "校招", "社招", "985", "211", "简历", "面试"],
+    "zhihu_topics": ["职场", "就业", "招聘", "职业发展"],
+    "weibo_super_topics": ["职场", "就业", "招聘"],
+    "36kr_columns": ["职场", "人才"],
+    "bilibili_categories": ["职场"],
+    "peer_boost": {"wallet": 2.0, "refute": 1.5, "split": 1.0}
+  },
+  "pension_medical": {
+    "keywords": ["社保", "医保", "养老金", "退休", "延迟退休", "老龄化", "养老", "独生子女", "医保改革", "个人养老金", "医保账户", "门诊共济"],
+    "zhihu_topics": ["社保", "医保", "养老", "退休"],
+    "weibo_super_topics": ["社保", "医保", "养老"],
+    "36kr_columns": ["养老", "大健康"],
+    "bilibili_categories": ["生活"],
+    "peer_boost": {"wallet": 2.0, "refute": 1.5, "toutiao": 1.0}
+  },
+  "auto_industry": {
+    "keywords": ["汽车", "电动车", "新能源", "比亚迪", "特斯拉", "蔚来", "小鹏", "理想", "小米汽车", "华为汽车", "充电", "续航", "电池", "锂", "固态电池", "降价", "车企", "燃油车", "合资", "BBA", "宝马", "奔驰", "大众"],
+    "zhihu_topics": ["汽车", "新能源汽车", "智能汽车", "自动驾驶"],
+    "weibo_super_topics": ["汽车", "新能源汽车", "电动车"],
+    "36kr_columns": ["出行", "汽车"],
+    "bilibili_categories": ["汽车", "科技"],
+    "peer_boost": {"wallet": 1.5, "refute": 1.0, "toutiao": 1.0}
+  },
+  "finance_investment": {
+    "keywords": ["股票", "A股", "牛市", "熊市", "基金", "ETF", "理财", "黄金", "白银", "原油", "期货", "汇率", "美元", "人民币", "加息", "降准", "存款", "利率", "债券", "外资", "北向", "南向", "印花税", "退市", "ST"],
+    "zhihu_topics": ["金融", "投资", "理财", "股票", "财经"],
+    "weibo_super_topics": ["财经", "股票", "理财"],
+    "36kr_columns": ["金融", "创投", "二级市场"],
+    "bilibili_categories": ["财经", "科技"],
+    "peer_boost": {"wallet": 2.0, "refute": 1.0}
+  },
+  "consumer_goods": {
+    "keywords": ["物价", "涨价", "猪肉", "鸡蛋", "食用油", "米面", "蔬菜", "水果", "消费", "零售", "超市", "电商", "双十一", "618", "拼多多", "淘宝", "京东", "抖音电商", "外卖", "美团", "饿了么", "预制菜", "食品添加剂", "食品安全"],
+    "zhihu_topics": ["消费", "电商", "零售", "食品"],
+    "weibo_super_topics": ["消费", "电商", "食品"],
+    "36kr_columns": ["消费", "零售"],
+    "bilibili_categories": ["生活", "美食"],
+    "peer_boost": {"wallet": 1.5, "refute": 0.5, "object": 1.0}
+  },
+  "tech_overseas": {
+    "keywords": ["中美", "美国", "制裁", "关税", "贸易战", "科技战", "芯片", "半导体", "光刻机", "华为", "中兴", "TikTok", "微信", "出海", "跨境", "封锁", "禁令", "实体清单"],
+    "zhihu_topics": ["中美关系", "科技", "半导体", "国际关系"],
+    "weibo_super_topics": ["科技", "国际", "财经"],
+    "36kr_columns": ["出海", "芯片", "国际"],
+    "bilibili_categories": ["科技", "时事"],
+    "peer_boost": {"wallet": 1.0, "refute": 1.5, "split": 1.0}
+  },
+  "workplace_life": {
+    "keywords": ["加班", "内卷", "躺平", "下班", "午休", "996", "大小周", "弹性工作", "远程办公", "居家办公", "考勤", "请假", "年假", "辞职", "裸辞", "副业", "创业", "自由职业", "00后", "整顿职场"],
+    "zhihu_topics": ["职场", "生活", "工作"],
+    "weibo_super_topics": ["职场", "生活方式"],
+    "36kr_columns": ["职场", "生活方式"],
+    "bilibili_categories": ["职场", "生活"],
+    "peer_boost": {"wallet": 1.0, "refute": 1.0, "split": 2.0}
+  },
+  "education": {
+    "keywords": ["教育", "高考", "中考", "考研", "留学", "学区", "学区房", "补习", "鸡娃", "双减", "大学", "就业", "专业", "985", "211", "双一流", "职业教育", "培训"],
+    "zhihu_topics": ["教育", "高考", "考研", "留学", "大学"],
+    "weibo_super_topics": ["教育", "高考", "考研"],
+    "36kr_columns": ["教育"],
+    "bilibili_categories": ["校园", "知识"],
+    "peer_boost": {"wallet": 1.0, "refute": 1.0, "split": 1.0}
+  },
+  "geopolitics": {
+    "keywords": ["战争", "冲突", "制裁", "外交", "地缘", "军事", "南海", "台海", "乌克兰", "俄罗斯", "伊朗", "以色列", "哈马斯", "欧盟", "北约", "石油", "能源危机", "粮食"],
+    "zhihu_topics": ["国际关系", "军事", "时政"],
+    "weibo_super_topics": ["国际", "军事", "时政"],
+    "36kr_columns": ["国际"],
+    "bilibili_categories": ["时事", "军事"],
+    "peer_boost": {"wallet": 1.0, "refute": 1.5, "toutiao": 1.0}
+  }
+}
