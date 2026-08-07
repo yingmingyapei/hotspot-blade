@@ -8,25 +8,63 @@ import json
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
+
+# 熔断器（v6.5 新增）——Pyright 无法静态分析 try/except 导入，用 getattr 规避
+sys.path.insert(0, str(Path(__file__).parent))
+_cb_mod = None
+try:
+    import circuit_breaker as _cb_mod  # type: ignore[import]
+    CB_ENABLED = True
+except ImportError:
+    CB_ENABLED = False
+
+def is_tripped(source: str) -> bool:
+    return bool(_cb_mod and _cb_mod.is_tripped(source))
+
+def record_failure(source: str) -> None:
+    if _cb_mod:
+        _cb_mod.record_failure(source)
+
+def record_success(source: str) -> None:
+    if _cb_mod:
+        _cb_mod.record_success(source)
+
+def get_status() -> dict:
+    return _cb_mod.get_status() if _cb_mod else {}
 
 def check_opencli_source(name, cmd, timeout=30):
     """检查opencli数据源"""
+    if CB_ENABLED and is_tripped(name):
+        return {'status': 'tripped', 'count': 0, 'message': f'熔断中，已跳过'}
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
         if result.returncode == 0:
             try:
                 data = json.loads(result.stdout)
                 if len(data) >= 3:
+                    if CB_ENABLED:
+                        record_success(name)
                     return {'status': 'ok', 'count': len(data), 'message': f'成功获取{len(data)}条数据'}
                 else:
+                    if CB_ENABLED:
+                        record_failure(name)
                     return {'status': 'warning', 'count': len(data), 'message': f'数据量不足：{len(data)}条'}
             except json.JSONDecodeError:
+                if CB_ENABLED:
+                    record_failure(name)
                 return {'status': 'error', 'count': 0, 'message': '返回数据格式错误'}
         else:
+            if CB_ENABLED:
+                record_failure(name)
             return {'status': 'error', 'count': 0, 'message': '命令执行失败'}
     except subprocess.TimeoutExpired:
+        if CB_ENABLED:
+            record_failure(name)
         return {'status': 'timeout', 'count': 0, 'message': f'命令超时({timeout}s)'}
     except Exception as e:
+        if CB_ENABLED:
+            record_failure(name)
         return {'status': 'error', 'count': 0, 'message': f'错误：{str(e)}'}
 
 def check_buzzing_cc():
@@ -91,6 +129,8 @@ def main():
         results[name] = result
         if result['status'] == 'ok':
             print(f'✅ {name}：{result["message"]}')
+        elif result['status'] == 'tripped':
+            print(f'🔇 {name}：{result["message"]}')
         elif result['status'] == 'warning':
             print(f'⚠️ {name}：{result["message"]}')
         elif result['status'] == 'timeout':
