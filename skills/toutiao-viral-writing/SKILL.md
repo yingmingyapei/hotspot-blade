@@ -9,9 +9,9 @@ requires:
     - "toutiao-sentence-patterns"
     - "toutiao-topic-engine"
     - "article-polish-master"
-version: 5.0.0
+version: 5.1.0
 created: 2026-05-01
-updated: 2026-06-26
+updated: 2026-08-24
 ---
 
 # 爆款刀锋
