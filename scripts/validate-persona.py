@@ -183,6 +183,54 @@ def check_opening_hook(text):
     return has_number or has_conflict, has_number, has_conflict
 
 
+
+# === F1 事实强度轻量校验 ===
+# D 级词表：出现即视为 D 级事实，禁止作为正文论据
+_F1_D_WORDS = [
+    "据网友爆料", "据称", "网传", "疑似", "坊间传闻", "听说", "不知为何",
+    "有人称", "据某人士透露", "据内部人士称",
+]
+# C 级词表：出现即计为 C 级（需显著来源标注）
+_F1_C_WORDS = [
+    "据报道", "据媒体报道", "据《", "据新华网", "据新华社", "据人民日报",
+    "据央视", "据澎湃新闻", "据财新", "据Reuters", "据 Bloomberg",
+]
+# S/A/B 级来源词（出现在数字 ±30 字内即视为可溯）
+_F1_SOURCE_MARKERS = [
+    "据", "截至", "根据", "数据显示", "统计显示", "年报", "季报",
+    "招股书", "财报", "官网", "官网显示", "维基百科", "百度百科",
+    "国家统计局", "海关总署", "央行", "银保监会", "证监会",
+    "Reuters", "Bloomberg", "FT", "WSJ",
+]
+
+
+def check_fact_strength(text):
+    """F1 事实强度：扫 D 级词 + 关键数字近邻是否带来源。
+    返回 (d_hits, c_hits, key_nums_unsourced, d_count, c_count)
+    """
+    d_hits = []
+    for w in _F1_D_WORDS:
+        n = text.count(w)
+        if n:
+            d_hits.append(f"{w}x{n}")
+    c_hits = []
+    for w in _F1_C_WORDS:
+        n = text.count(w)
+        if n:
+            c_hits.append(f"{w}x{n}")
+    key_nums_unsourced = []
+    for m in re.finditer(r"\d{3,}(?:[亿万元美元]?|%)?|\d+(?:\.?\d+)?%", text):
+        num = m.group(0)
+        start = max(0, m.start() - 30)
+        end = min(len(text), m.end() + 30)
+        window = text[start:end]
+        if not any(src in window for src in _F1_SOURCE_MARKERS):
+            key_nums_unsourced.append(num)
+        if len(key_nums_unsourced) >= 3:
+            break
+    return d_hits, c_hits, key_nums_unsourced
+
+
 def validate(text, strict=False):
     total_chars = len(text)
     total_lines = text.count("\n") + 1
@@ -292,6 +340,32 @@ def validate(text, strict=False):
         all_pass = False
         print(f"  ❌ P2 前30字钩子: 无钩子 (需在前80字内出现数字或冲突)")
 
+
+    # === F1: 事实强度分级 ===
+    d_hits, c_hits, key_nums_unsourced = check_fact_strength(text)
+    f1_pass = (len(d_hits) == 0) and (len(key_nums_unsourced) <= 1)
+    if not f1_pass:
+        if not strict:
+            f1_pass = True  # 非 strict 模式只做提示，不拦
+    results.append(("F1", "事实强度", f1_pass,
+                    f"D级={len(d_hits)}, C级={len(c_hits)}, 关键数字无来源={len(key_nums_unsourced)}",
+                    "D级=0, 关键数字无来源≤1"))
+    if f1_pass and (d_hits or c_hits or key_nums_unsourced):
+        print(f"  ⚠️  F1 事实强度: D级{len(d_hits)}处, C级{len(c_hits)}处, 关键数字无来源{len(key_nums_unsourced)}处")
+        if d_hits:
+            print(f"      D级词: {', '.join(d_hits[:5])}")
+        if c_hits:
+            print(f"      C级来源: {', '.join(c_hits[:3])}")
+        if key_nums_unsourced:
+            print(f"      关键数字无来源: {', '.join(key_nums_unsourced)}")
+    elif not f1_pass:
+        all_pass = False
+        print(f"  ❌ F1 事实强度: D级{len(d_hits)}处 (D级禁止作为论据)")
+        if key_nums_unsourced:
+            print(f"      关键数字无来源: {', '.join(key_nums_unsourced)}")
+    else:
+        print(f"  ✅ F1 事实强度: 无 D 级词, 关键数字均有来源 (达标)")
+
     # === Summary ===
     print()
     print("=" * 60)
@@ -304,10 +378,15 @@ def validate(text, strict=False):
     p2_results = [r for r in results if r[0] == "P2"]
     p2_pass = sum(1 for r in p2_results if r[2])
     p2_total = len(p2_results)
+    f1_results = [r for r in results if r[0] == "F1"]
+    f1_pass = sum(1 for r in f1_results if r[2])
+    f1_total = len(f1_results)
 
     print(f"  P0 (人设核心): {p0_pass}/{p0_total} 通过")
     print(f"  P1 (质量门禁): {p1_pass}/{p1_total} 通过")
     print(f"  P2 (优化建议): {p2_pass}/{p2_total} 通过")
+    if f1_total:
+        print(f"  F1 (事实强度): {f1_pass}/{f1_total} 通过")
 
     if all_pass:
         print()

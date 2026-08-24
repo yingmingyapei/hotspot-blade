@@ -63,8 +63,10 @@ def validate_batch(filepath: str) -> bool:
         if re.search(r'[【\u3010][^】\u3011]*[】\u3011]', title):
             issues.append('标题含【】标注')
         title_len = len(title)
-        if title_len < 10 or title_len > 35:
-            issues.append(f'标题长度{title_len}字（应10-35）')
+        if title_len < 20 or title_len > 30:
+            issues.append(f'标题长度{title_len}字（应20-30）')
+        if total < 450 or total > 600:
+            issues.append(f'正文{total}字（应450-600）')
         for w in ['底层逻辑', '赋能', '抓手', '综上所述', '值得注意的是', '并没有']:
             if w in body:
                 issues.append(f'禁用词: {w}')
