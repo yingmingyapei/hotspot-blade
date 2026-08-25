@@ -8,7 +8,7 @@ requires:
   skills:
     - "toutiao-sentence-patterns"
     - "toutiao-topic-engine"
-version: 5.2.0
+version: 6.8.0
 created: 2026-05-01
 updated: 2026-08-25
 ---

@@ -2,9 +2,9 @@
 name: toutiao-topic-engine
 title: 选题引擎与微头条公式
 description: 五维选题评分 + 营销驱动选题法 + 人性密码五公式 + 微头条钩子模板库。爆款刀锋的选题与短内容模块。
-version: 5.0.0
+version: 6.8.0
 created: 2026-06-18
-updated: 2026-06-26
+updated: 2026-08-25
 author: Hermes
 tags: [选题, 微头条, 评分, 人性密码, 钩子, 头条]
 ---

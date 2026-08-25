@@ -2,9 +2,9 @@
 name: toutiao-sentence-patterns
 title: 九边句式库与辣度校准
 description: 七种犀利句式库 + 三级辣度模型 + 禁用句式清单。爆款刀锋的核心武器模块。
-version: 5.0.0
+version: 6.8.0
 created: 2026-06-18
-updated: 2026-06-26
+updated: 2026-08-25
 author: Hermes
 tags: [九边, 句式, 犀利, 辣度, 头条, 写作]
 ---
