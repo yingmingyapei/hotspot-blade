@@ -8,9 +8,9 @@ requires:
   skills:
     - "toutiao-sentence-patterns"
     - "toutiao-topic-engine"
-version: 5.1.0
+version: 5.2.0
 created: 2026-05-01
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # 爆款刀锋
@@ -85,6 +85,12 @@ updated: 2026-08-24
 写作前必须加载：
 1. `toutiao-sentence-patterns` — 七种句式库 + 辣度校准 + 禁用清单
 2. `toutiao-topic-engine` — 选题评分 + 人性密码 + 微头条公式
+
+**v6.8.0 新增加载项**（按选题类型选择）：
+3. `renshi-flip-arsenal` — 心理翻转引擎（3个），适用于消费/教育/社交/饭圈类选题
+4. `craftsman-heart` — 创客心法（2条），适用于所有热点，提升深度
+
+加载方式：写作前调用 `skill_view(name='renshi-flip-arsenal')` 或 `skill_view(name='craftsman-heart')`
 
 ---
 
