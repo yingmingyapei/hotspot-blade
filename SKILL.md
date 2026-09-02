@@ -1,6 +1,6 @@
 ---
 name: hotspot-blade
-version: 6.9.0
+version: 6.10.0
 title: 热点刀锋
 description: 热榜采集→选题评分→爆款写作→发布优化→推送的完整工作流编排器。覆盖封面/标题/时间/评论/话题标签。触发词：「写热点」「抓热榜写微头条」「热点刀锋」
 author: Hermes
@@ -535,3 +535,54 @@ author: Hermes
 写作前调用：```bash
 skill_view(name='hotspot-blade/references/nine边-pro-steamed-report-summary')
 ```
+
+---
+
+## v6.10.0 新增：Anti-Slop 写作原则（2026-09-02）
+
+> 移植自 [nutlope/hallmark](https://github.com/Nutlope/hallmark)（MIT，27K+ stars）的设计哲学——"拒绝 LLM 训练数据中最安全的统计平均值"——迁移到写作场景，填补现有纪律（HB-03/04/05/F1）的**执行力度盲区**。
+>
+> 核心洞察：热点刀锋已有 HB-05 管标题句式、HB-03 管算账数字、F1 管事实分级，但**正文结构多样性**和**封面图风格固定化**是未被覆盖的盲区。Hallmark 的 57 扇排斥门思路移植后，形成以下 4 条原则。
+
+详见 `references/anti-slop-writing-principles.md`。
+
+### 四条原则速查
+
+| 原则 | 解决什么问题 | 当前覆盖 |
+|------|-------------|---------|
+| 结构多样性强制 | 5篇全是同款四段式流水线 | **盲区**，新增 |
+| 伪造内容零容忍 | C级数字写成A级表述凑字数 | F1 已覆盖，升级执行力度 |
+| 封面图动态风格 | 5篇封面提示词风格词完全相同 | 部分，升级为动态映射 |
+| 算账句式轮换 | "我帮你算算"出现≥3次/批 | **盲区**，新增 |
+
+### 结构模板库（轮换使用）
+
+| 模板 | 适用场景 |
+|------|---------|
+| 标准四段式 | 通用 |
+| 数据冲击型 | 痛点级、有硬数据 |
+| 场景代入型 | 人物故事、事件类 |
+| 对话辩论型 | 争议性话题 |
+| 机制剥离型 | 深度分析、认知级 |
+| 历史纵深型 | 国际/历史类（非敏感） |
+
+**自检**：遮住5篇标题，只看第一段，能看出是同一批吗？能 → 换至少2篇的结构模板。
+
+### 封面图风格词动态选择
+
+根据选题情绪基调选关键词，不固定套用：
+
+| 情绪基调 | 风格词 |
+|---------|--------|
+| 冷峻/批判 | cinematic, editorial, chiaroscuro, desaturated |
+| 讽刺/反差 | split composition, visual irony, documentary |
+| 悲悯/沉重 | low-key, documentary realism, negative space |
+| 讽刺/黑色幽默 | deadpan, flat lighting, observational |
+| 希望/治愈 | golden hour, soft natural light, warm |
+| 悬念/悬疑 | chiaroscuro, moody, shallow DOF |
+
+### 校验整合
+
+- `validate-persona.py` 新增：算账句式计数（"我帮你算算"≤2次/批）
+- `validate-hotspot-batch.py` 新增：宏观结构类型计数（标准四段式≤3篇/批）
+- 封面图提示词生成时按情绪基调动态选词（人工检查）

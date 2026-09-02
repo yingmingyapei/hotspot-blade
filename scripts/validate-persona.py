@@ -341,6 +341,33 @@ def validate(text, strict=False):
         print(f"  ❌ P2 前30字钩子: 无钩子 (需在前80字内出现数字或冲突)")
 
 
+    # === 反 slop: 算账句式计数（Hallmark 移植 · v6.10.0）===
+    # "我帮你算算"等算账起手式每篇≤1次，全批合计≤2次
+    _ACCOUNTING_OPENERS = [
+        "我帮你算算", "咱们算算", "说句实在的", "先算笔账",
+        "算一笔账", "算笔账", "来算算", "咱们来算",
+    ]
+    # 用 longest-first 去重：先匹配长模式，避免短模式重复计数
+    _ACCOUNTING_OPENERS_SORTED = sorted(_ACCOUNTING_OPENERS, key=len, reverse=True)
+    acct_opener_count = 0
+    remaining = text
+    for p in _ACCOUNTING_OPENERS_SORTED:
+        n = remaining.count(p)
+        acct_opener_count += n
+        remaining = remaining.replace(p, "", n)  # 移除已计数的，防止子串重复
+    acct_opener_pass = acct_opener_count <= 1
+    results.append(("S1", "算账句式集中度", acct_opener_pass,
+                    f"{acct_opener_count}处算账起手式", "≤1处/篇"))
+    if acct_opener_count > 0:
+        print(f"  {'⚠️' if acct_opener_count > 1 else '✅'} S1 算账句式: {acct_opener_count}处起手式"
+              f" {'(⚠️ 建议轮换句式，同批合计≤2处)' if acct_opener_count > 1 else '(达标)'}")
+        if acct_opener_count > 1 and not strict:
+            pass  # 提示但不拦
+        elif acct_opener_count > 1 and strict:
+            all_pass = False
+    else:
+        print(f"  ✅ S1 算账句式: 无算账起手式 (达标)")
+
     # === F1: 事实强度分级 ===
     d_hits, c_hits, key_nums_unsourced = check_fact_strength(text)
     f1_pass = (len(d_hits) == 0) and (len(key_nums_unsourced) <= 1)

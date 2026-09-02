@@ -46,7 +46,7 @@ def validate_batch(filepath: str) -> bool:
         # ⚠️ 行首+行末+re.M，行内引号不会打断贪心匹配
         title_m = re.search(r'^标题：(.+)$', a, re.M)
         # 正文 capture：贪婪到 ═══，不用 \n\n评论（会被正文内"评论区"提前截断）
-        body_m = re.search(r'^正文：\n(.*)', a, re.S | re.M)
+        body_m = re.search(r'^正文：\n?(.*)', a, re.S | re.M)
         if not title_m or not body_m:
             print(f'  第{i+1}篇 ⚠️ 解析失败，跳过')
             continue
@@ -90,6 +90,69 @@ def validate_batch(filepath: str) -> bool:
             print(f'  ❌ 标题句式: {flip_n}/{len(all_titles)} 篇用了「不是X是Y」反差句式（占{flip_ratio:.0%}），模板化，需轮换至少3种句式')
         else:
             print(f'  ✅ 标题句式: 反差句式 {flip_n}/{len(all_titles)} 篇，未过度集中')
+
+    # === 反 slop: 全批算账起手式计数（Hallmark 移植 · v6.10.0）===
+    # 同批5篇 "我帮你算算" 等起手式合计≤2次，避免模板化
+    _ACCOUNTING_OPENERS = [
+        "我帮你算算", "咱们算算", "说句实在的", "先算笔账",
+        "算一笔账", "算笔账", "来算算", "咱们来算",
+    ]
+    batch_opener_count = sum(a.count(p) for a in arts for p in _ACCOUNTING_OPENERS)
+    batch_opener_pass = batch_opener_count <= 2
+    if not batch_opener_pass:
+        ok = False
+        print(f'  ❌ 算账句式: 全批 {batch_opener_count} 处算账起手式（应≤2处/批），需轮换句式')
+    else:
+        print(f'  ✅ 算账句式: 全批 {batch_opener_count} 处起手式，未过度集中')
+
+    # === 反 slop: 结构类型多样性（Hallmark 移植 · v6.10.0）===
+    # 检测每篇的开头类型，统计分布；标准四段式（开场冲突→算账→反转→收尾追问）占比≤60%
+    STRUCTURE_MARKERS = {
+        "数据冲击型": [r"^\d+[万亿亿千百十万块元%]", r"^\d+\.?\d*%"],
+        "场景代入型": [r"^\d{4}年?\d{1,2}月?\d{1,2}日?", r"^\d{1,2}月?\d{1,2}日?", r"^(上午|下午|晚上|早上|昨晚|今早|深夜)"],
+        "对话辩论型": [r"^(很多人|大家|网上|普遍认为|都说|常识)", r"^你以为"],
+        "机制剥离型": [r"^(这不是|表面看|本质上|底层|机制|逻辑是)", r"^所谓"],
+        "标准四段式": [
+            r"我帮你算算.*听着没毛病",
+            r"听着没毛病.*我帮你算算",
+            r"咱们算算.*听着没毛病",
+            r"听着没毛病.*咱们算算",
+            r"说句实在的.*但",
+            r"先算笔账.*但",
+            r"算笔账.*听着没毛病",
+        ],
+    }
+
+    structure_counts = {name: 0 for name in STRUCTURE_MARKERS}
+    for a in arts:
+        if '正文：' not in a:
+            continue
+        body_m = re.search(r'^正文：\n?(.*)', a, re.S | re.M)
+        if not body_m:
+            continue
+        body = body_m.group(1)
+        opening = body[:60]
+        matched = False
+        for struct_name, patterns in STRUCTURE_MARKERS.items():
+            if any(re.search(p, opening) for p in patterns):
+                structure_counts[struct_name] += 1
+                matched = True
+                break
+        if not matched:
+            structure_counts["标准四段式"] += 1  # 未知归入默认类
+
+    total_structured = sum(structure_counts.values())
+    if total_structured > 0:
+        std_ratio = structure_counts["标准四段式"] / total_structured
+        struct_diversity_pass = std_ratio <= 0.6
+        if not struct_diversity_pass:
+            ok = False
+            print(f'  ❌ 结构多样性: 标准四段式 {structure_counts["标准四段式"]}/{total_structured} 篇（占{std_ratio:.0%}），需至少2篇换结构模板')
+        else:
+            print(f'  ✅ 结构多样性: 标准四段式 {structure_counts["标准四段式"]}/{total_structured} 篇，未过度集中')
+        # 打印分布（提示用，不拦）
+        dist_str = ", ".join(f"{k}:{v}" for k, v in structure_counts.items() if v > 0)
+        print(f'     结构分布: {dist_str}')
 
     print()
     print('=' * 50)
